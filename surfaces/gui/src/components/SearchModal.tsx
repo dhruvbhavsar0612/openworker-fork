@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { Persona } from "../api";
 import type { SessionInfo } from "../types";
 import { isProjectScoped, shortPersonaName } from "../personaScope";
@@ -109,10 +110,15 @@ export function SearchModal({
     );
   };
 
-  return (
-    <div className="fixed inset-0 z-50" onKeyDown={onKey}>
+  // Portal to document.body so `fixed` centering stays viewport-relative when the modal is
+  // opened from the collapsed sidebar (its `transform` would otherwise become the containing block).
+  return createPortal(
+    <div className="fixed inset-0 z-50" onKeyDown={onKey} data-testid="search-modal">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" onClick={onClose} />
-      <div className="absolute left-1/2 top-[14vh] -translate-x-1/2 w-[640px] max-w-[92vw] rounded-xl2 border border-line bg-panel shadow-2xl overflow-hidden">
+      <div
+        className="absolute left-1/2 top-[14vh] -translate-x-1/2 w-[640px] max-w-[92vw] rounded-xl2 border border-line bg-panel shadow-2xl overflow-hidden"
+        data-testid="search-modal-panel"
+      >
         <div className="px-4 pt-3.5 pb-2.5 border-b border-line flex items-center gap-2.5">
           <Icon name="search" size={16} className="text-faint shrink-0" />
           <input
@@ -151,6 +157,7 @@ export function SearchModal({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

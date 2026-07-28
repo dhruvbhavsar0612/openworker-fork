@@ -33,6 +33,29 @@ test("top-left cluster renders only while the sidebar is collapsed", async ({ pa
   await expect(page.getByTestId("topbar-cluster")).toHaveCount(0);
 });
 
+test("search modal from peeked collapsed sidebar is viewport-centered", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator(".sidebar")).toBeVisible();
+
+  await page.keyboard.press("Meta+b");
+  await expect(page.locator(".app")).toHaveClass(/nav-collapsed/);
+
+  // Peek the sidebar over the content (the bug path: search opened from the sidebar, not the
+  // topbar cluster, while the nav is still collapsed).
+  await page.locator(".nav-hover-zone").hover();
+  await page.locator(".sidebar").getByRole("button", { name: /^Search$/ }).click();
+
+  const panel = page.getByTestId("search-modal-panel");
+  await expect(panel).toBeVisible();
+
+  const box = await panel.boundingBox();
+  const viewport = page.viewportSize();
+  expect(box).toBeTruthy();
+  const panelCenterX = box!.x + box!.width / 2;
+  const viewportCenterX = viewport!.width / 2;
+  expect(Math.abs(panelCenterX - viewportCenterX)).toBeLessThan(24);
+});
+
 test("facts subtitle: absent on a fresh session, model-only after the first turn, inert", async ({
   page,
 }) => {
