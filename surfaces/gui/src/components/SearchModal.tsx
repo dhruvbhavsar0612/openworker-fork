@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { Persona } from "../api";
 import type { SessionInfo } from "../types";
 import { isProjectScoped, shortPersonaName } from "../personaScope";
@@ -109,8 +110,11 @@ export function SearchModal({
     );
   };
 
-  return (
-    <div className="fixed inset-0 z-50" onKeyDown={onKey}>
+  // The sidebar can be transformed, clipped, or otherwise composited by the desktop shell.
+  // A fixed child of it is not reliably fixed to the window on every WebView, so mount the
+  // command palette at the document root instead.
+  return createPortal(
+    <div className="fixed inset-0 z-50" data-testid="search-modal" onKeyDown={onKey}>
       <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" onClick={onClose} />
       <div className="absolute left-1/2 top-[14vh] -translate-x-1/2 w-[640px] max-w-[92vw] rounded-xl2 border border-line bg-panel shadow-2xl overflow-hidden">
         <div className="px-4 pt-3.5 pb-2.5 border-b border-line flex items-center gap-2.5">
@@ -151,6 +155,7 @@ export function SearchModal({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
